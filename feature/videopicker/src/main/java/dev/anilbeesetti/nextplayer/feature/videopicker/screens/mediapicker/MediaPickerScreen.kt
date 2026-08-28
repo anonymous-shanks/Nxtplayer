@@ -378,7 +378,13 @@ internal fun MediaPickerScreen(
                 button = {
                     ToggleFloatingActionButton(
                         checked = isFabExpanded,
-                        onCheckedChange = { isFabExpanded = !isFabExpanded },
+                                                onCheckedChange = {
+                            if (uiState.recentlyPlayedVideo != null && !isFabExpanded) {
+                                onAction(MediaPickerAction.OnPlayVideo(uiState.recentlyPlayedVideo.uriString.toUri()))
+                            } else {
+                                isFabExpanded = !isFabExpanded
+                            }
+                        },
                         modifier = Modifier
                             // Match the ring to the FAB's own shape: a 16.dp rounded square while
                             // collapsed, morphing to a circle once expanded.
