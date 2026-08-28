@@ -35,9 +35,16 @@ fun PlayerGestures(
                     if (pictureInPictureState.isInPictureInPictureMode) return@pointerInput
 
                     detectTapGestures(
-                        onTap = {
+                        onTap = { offset ->
                             if (tapGestureState.seekMillis != 0L) return@detectTapGestures
-                            controlsVisibilityState.toggleControlsVisibility()
+
+                            // Vibe Coded: Tapping the center 30% of the screen plays/pauses
+                            val xRatio = offset.x / size.width
+                            if (xRatio in 0.35f..0.65f) {
+                                if (tapGestureState.player.isPlaying) tapGestureState.player.pause() else tapGestureState.player.play()
+                            } else {
+                                controlsVisibilityState.toggleControlsVisibility()
+                            }
                         },
                         onDoubleTap = {
                             if (controlsVisibilityState.controlsLocked) return@detectTapGestures
