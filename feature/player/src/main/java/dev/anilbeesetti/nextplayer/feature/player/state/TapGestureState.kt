@@ -46,7 +46,7 @@ fun rememberTapGestureState(
 
 @Stable
 class TapGestureState(
-    private val player: Player,
+    val player: Player,
     private val seekIncrementMillis: Long,
     private val useLongPressGesture: Boolean = true,
     private val coroutineScope: CoroutineScope,
