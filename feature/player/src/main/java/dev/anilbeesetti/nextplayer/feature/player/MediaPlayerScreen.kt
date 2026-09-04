@@ -334,8 +334,6 @@ fun MediaPlayerScreen(
                             animationStep = 1
                             delay(120)
                             animationStep = 2
-                            delay(120)
-                            animationStep = 3
                             delay(320)
                         }
                     }
@@ -348,11 +346,6 @@ fun MediaPlayerScreen(
                         targetValue = if (animationStep >= 2) 1f else 0f,
                         animationSpec = tween(durationMillis = 120),
                         label = "arrow2",
-                    )
-                    val alpha3 by animateFloatAsState(
-                        targetValue = if (animationStep >= 3) 1f else 0f,
-                        animationSpec = tween(durationMillis = 120),
-                        label = "arrow3",
                     )
                     Row(
                         modifier = Modifier
@@ -379,12 +372,6 @@ fun MediaPlayerScreen(
                                 contentDescription = null,
                                 modifier = Modifier.size(11.dp),
                                 tint = Color.White.copy(alpha = alpha2),
-                            )
-                            Icon(
-                                painter = painterResource(coreUiR.drawable.ic_play),
-                                contentDescription = null,
-                                modifier = Modifier.size(11.dp),
-                                tint = Color.White.copy(alpha = alpha3),
                             )
                         }
                         Text(
