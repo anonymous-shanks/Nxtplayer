@@ -25,6 +25,7 @@ data class PlayerPreferences(
     val useSeekControls: Boolean = true,
     val useZoomControls: Boolean = true,
     val enablePanGesture: Boolean = false,
+    val singleTapCenterPlayPause: Boolean = false,
     val doubleTapGesture: DoubleTapGesture = DoubleTapGesture.BOTH,
     val useLongPressControls: Boolean = false,
     val longPressControlsSpeed: Float = 2.0f,
