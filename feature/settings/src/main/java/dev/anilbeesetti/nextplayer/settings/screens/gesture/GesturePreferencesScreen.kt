@@ -197,6 +197,13 @@ private fun GesturePreferencesContent(
                     isChecked = uiState.preferences.enablePanGesture,
                     onClick = { onEvent(GesturePreferencesUiEvent.ToggleEnablePanGesture) },
                 )
+                PreferenceSwitch(
+                    title = "Single tap center",
+                    description = "Single tap on the center to play/pause",
+                    icon = NextIcons.Tap,
+                    isChecked = uiState.preferences.singleTapCenterPlayPause,
+                    onClick = { onEvent(GesturePreferencesUiEvent.ToggleSingleTapCenterPlayPause) },
+                )
                 PreferenceSwitchWithDivider(
                     title = stringResource(id = R.string.double_tap),
                     description = stringResource(id = R.string.double_tap_description),
