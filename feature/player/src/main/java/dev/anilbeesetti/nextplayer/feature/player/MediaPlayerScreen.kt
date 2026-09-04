@@ -288,6 +288,7 @@ fun MediaPlayerScreen(
                         textBold = playerPreferences.subtitleTextBold,
                         applyEmbeddedStyles = playerPreferences.applyEmbeddedStyles,
                     ),
+                    isSingleTapCenterPlayPause = playerPreferences.singleTapCenterPlayPause,
                 )
 
                 AnimatedVisibility(
