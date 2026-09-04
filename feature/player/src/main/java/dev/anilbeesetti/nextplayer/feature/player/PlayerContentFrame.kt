@@ -38,6 +38,7 @@ fun PlayerContentFrame(
     videoZoomAndContentScaleState: VideoZoomAndContentScaleState,
     volumeAndBrightnessGestureState: VolumeAndBrightnessGestureState,
     subtitleConfiguration: SubtitleConfiguration,
+    isSingleTapCenterPlayPause: Boolean = false,
 ) {
     val presentationState = rememberPresentationState(player)
     PlayerSurface(
@@ -78,6 +79,14 @@ fun PlayerContentFrame(
         seekGestureState = seekGestureState,
         videoZoomAndContentScaleState = videoZoomAndContentScaleState,
         volumeAndBrightnessGestureState = volumeAndBrightnessGestureState,
+        isSingleTapCenterPlayPause = isSingleTapCenterPlayPause,
+        onTogglePlayPause = {
+            if (player.isPlaying) {
+                player.pause()
+            } else {
+                player.play()
+            }
+        }
     )
 
     SubtitleView(
