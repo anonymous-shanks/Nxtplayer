@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -23,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,7 +50,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -315,7 +318,7 @@ fun MediaPlayerScreen(
                     positionMs = dpadSeekTargetMs,
                 )
 
-                                AnimatedVisibility(
+                AnimatedVisibility(
                     modifier = Modifier
                         .padding(top = 24.dp)
                         .align(Alignment.TopCenter),
@@ -323,18 +326,79 @@ fun MediaPlayerScreen(
                     enter = fadeIn(),
                     exit = fadeOut(),
                 ) {
-                    Surface(shape = CircleShape) {
+                    var animationStep by remember { mutableIntStateOf(0) }
+                    LaunchedEffect(Unit) {
+                        while (true) {
+                            animationStep = 0
+                            delay(120)
+                            animationStep = 1
+                            delay(120)
+                            animationStep = 2
+                            delay(120)
+                            animationStep = 3
+                            delay(320)
+                        }
+                    }
+                    val alpha1 by animateFloatAsState(
+                        targetValue = if (animationStep >= 1) 1f else 0f,
+                        animationSpec = tween(durationMillis = 120),
+                        label = "arrow1",
+                    )
+                    val alpha2 by animateFloatAsState(
+                        targetValue = if (animationStep >= 2) 1f else 0f,
+                        animationSpec = tween(durationMillis = 120),
+                        label = "arrow2",
+                    )
+                    val alpha3 by animateFloatAsState(
+                        targetValue = if (animationStep >= 3) 1f else 0f,
+                        animationSpec = tween(durationMillis = 120),
+                        label = "arrow3",
+                    )
+                    Row(
+                        modifier = Modifier
+                            .background(
+                                color = Color.Black.copy(alpha = 0.08f),
+                                shape = RoundedCornerShape(8.dp),
+                            )
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Row(
-                            modifier = Modifier.padding(
-                                horizontal = 8.dp,
-                                vertical = 4.dp,
-                            ),
+                            horizontalArrangement = Arrangement.spacedBy((-1).dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(
-                                text = "${tapGestureState.longPressSpeed.toInt()}x",
-                                style = MaterialTheme.typography.labelSmall,
+                            Icon(
+                                painter = painterResource(coreUiR.drawable.ic_play),
+                                contentDescription = null,
+                                modifier = Modifier.size(11.dp),
+                                tint = Color.White.copy(alpha = alpha1),
+                            )
+                            Icon(
+                                painter = painterResource(coreUiR.drawable.ic_play),
+                                contentDescription = null,
+                                modifier = Modifier.size(11.dp),
+                                tint = Color.White.copy(alpha = alpha2),
+                            )
+                            Icon(
+                                painter = painterResource(coreUiR.drawable.ic_play),
+                                contentDescription = null,
+                                modifier = Modifier.size(11.dp),
+                                tint = Color.White.copy(alpha = alpha3),
                             )
                         }
+                        Text(
+                            text = "${tapGestureState.longPressSpeed}x",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                shadow = Shadow(
+                                    color = Color.Black.copy(alpha = 0.10f),
+                                    offset = Offset(0f, 1f),
+                                    blurRadius = 2f,
+                                ),
+                            ),
+                            color = Color.White,
+                        )
                     }
                 }
 
