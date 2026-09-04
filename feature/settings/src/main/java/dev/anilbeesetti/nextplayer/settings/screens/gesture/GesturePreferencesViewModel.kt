@@ -45,6 +45,7 @@ class GesturePreferencesViewModel @Inject constructor(
             GesturePreferencesUiEvent.ToggleUseSeekControls -> toggleUseSeekControls()
             GesturePreferencesUiEvent.ToggleUseZoomControls -> toggleUseZoomControls()
             GesturePreferencesUiEvent.ToggleEnablePanGesture -> toggleEnablePanGesture()
+            GesturePreferencesUiEvent.ToggleSingleTapCenterPlayPause -> toggleSingleTapCenterPlayPause()
             is GesturePreferencesUiEvent.UpdateLongPressControlsSpeed -> updateLongPressControlsSpeed(event.value)
             is GesturePreferencesUiEvent.UpdateSeekIncrement -> updateSeekIncrement(event.value)
             is GesturePreferencesUiEvent.UpdateSeekSensitivity -> updateSeekSensitivity(event.value)
@@ -129,6 +130,14 @@ class GesturePreferencesViewModel @Inject constructor(
         }
     }
 
+    private fun toggleSingleTapCenterPlayPause() {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(singleTapCenterPlayPause = !it.singleTapCenterPlayPause)
+            }
+        }
+    }
+
     private fun updateLongPressControlsSpeed(value: Float) {
         viewModelScope.launch {
             preferencesRepository.updatePlayerPreferences { it.copy(longPressControlsSpeed = value) }
@@ -189,6 +198,7 @@ sealed interface GesturePreferencesUiEvent {
     data object ToggleUseSeekControls : GesturePreferencesUiEvent
     data object ToggleUseZoomControls : GesturePreferencesUiEvent
     data object ToggleEnablePanGesture : GesturePreferencesUiEvent
+    data object ToggleSingleTapCenterPlayPause : GesturePreferencesUiEvent
     data class UpdateLongPressControlsSpeed(val value: Float) : GesturePreferencesUiEvent
     data class UpdateSeekIncrement(val value: Int) : GesturePreferencesUiEvent
     data class UpdateSeekSensitivity(val value: Float) : GesturePreferencesUiEvent
