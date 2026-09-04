@@ -26,22 +26,28 @@ fun PlayerGestures(
     seekGestureState: SeekGestureState,
     videoZoomAndContentScaleState: VideoZoomAndContentScaleState,
     volumeAndBrightnessGestureState: VolumeAndBrightnessGestureState,
+    isSingleTapCenterPlayPause: Boolean = false,
+    onTogglePlayPause: () -> Unit = {}
 ) {
     BoxWithConstraints {
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .pointerInput(pictureInPictureState.isInPictureInPictureMode) {
+                .pointerInput(
+                    pictureInPictureState.isInPictureInPictureMode,
+                    isSingleTapCenterPlayPause
+                ) {
                     if (pictureInPictureState.isInPictureInPictureMode) return@pointerInput
 
                     detectTapGestures(
                         onTap = { offset ->
                             if (tapGestureState.seekMillis != 0L) return@detectTapGestures
 
-                            // Vibe Coded: Tapping the center 30% of the screen plays/pauses
-                            val xRatio = offset.x / size.width
-                            if (xRatio in 0.35f..0.65f) {
-                                if (tapGestureState.player.isPlaying) tapGestureState.player.pause() else tapGestureState.player.play()
+                            val width = size.width.toFloat()
+                            val xRatio = offset.x / width
+
+                            if (isSingleTapCenterPlayPause && xRatio in (1f / 3f)..(2f / 3f)) {
+                                onTogglePlayPause()
                             } else {
                                 controlsVisibilityState.toggleControlsVisibility()
                             }
