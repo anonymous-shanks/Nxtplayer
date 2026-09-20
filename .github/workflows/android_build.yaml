@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build Unsigned Release APK
+    name: Build Unsigned Release APKs
     runs-on: ubuntu-latest
 
     steps:
@@ -25,11 +25,40 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Release APK
+      - name: Build Release APKs
         run: ./gradlew assembleRelease
         
-      - name: Upload Unsigned Release APK
+      - name: Upload arm64-v8a APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextplayer-arm64-v8a-unsigned
+          path: app/build/outputs/apk/release/*arm64-v8a*.apk
+          if-no-files-found: ignore
+
+      - name: Upload armeabi-v7a APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextplayer-armeabi-v7a-unsigned
+          path: app/build/outputs/apk/release/*armeabi-v7a*.apk
+          if-no-files-found: ignore
+
+      - name: Upload x86_64 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextplayer-x86_64-unsigned
+          path: app/build/outputs/apk/release/*x86_64*.apk
+          if-no-files-found: ignore
+
+      - name: Upload Universal APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextplayer-universal-unsigned
+          path: app/build/outputs/apk/release/*universal*.apk
+          if-no-files-found: ignore
+          
+      - name: Upload Default/Fallback APK
         uses: actions/upload-artifact@v4
         with:
           name: nextplayer-release-unsigned
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: ignore
