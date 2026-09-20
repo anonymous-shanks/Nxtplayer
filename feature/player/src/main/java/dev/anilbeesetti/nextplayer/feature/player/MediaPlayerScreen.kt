@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -23,7 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,7 +50,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -333,21 +336,48 @@ fun MediaPlayerScreen(
                         .padding(top = 24.dp)
                         .align(Alignment.TopCenter),
                     visible = tapGestureState.isLongPressGestureInAction,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
+                    enter = EnterTransition.None,
+                    exit = ExitTransition.None,
                 ) {
-                    Surface(shape = CircleShape) {
+                    Row(
+                        modifier = Modifier
+                            .background(
+                                color = Color.Black.copy(alpha = 0.08f),
+                                shape = RoundedCornerShape(8.dp),
+                            )
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Row(
-                            modifier = Modifier.padding(
-                                horizontal = 16.dp,
-                                vertical = 8.dp,
-                            ),
+                            horizontalArrangement = Arrangement.spacedBy((-1).dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(
-                                text = stringResource(coreUiR.string.fast_playback_speed, tapGestureState.longPressSpeed),
-                                style = MaterialTheme.typography.labelLarge,
+                            Icon(
+                                painter = painterResource(coreUiR.drawable.ic_play),
+                                contentDescription = null,
+                                modifier = Modifier.size(11.dp),
+                                tint = Color.White,
+                            )
+                            Icon(
+                                painter = painterResource(coreUiR.drawable.ic_play),
+                                contentDescription = null,
+                                modifier = Modifier.size(11.dp),
+                                tint = Color.White,
                             )
                         }
+                        Text(
+                            text = "${tapGestureState.longPressSpeed}x",
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                shadow = Shadow(
+                                    color = Color.Black.copy(alpha = 0.10f),
+                                    offset = Offset(0f, 1f),
+                                    blurRadius = 2f,
+                                ),
+                            ),
+                            color = Color.White,
+                        )
                     }
                 }
 
@@ -364,7 +394,7 @@ fun MediaPlayerScreen(
                                     .onFocusChanged { isUnlockFocused = it.hasFocus }
                             },
                             containerColor = Color.Black.copy(0.5f),
-                            onClick = { controlsVisibilityState.unlockControls() },
+                            onClick = { controlsVisibilityState.unlockControls() }
                         ) {
                             Icon(
                                 painter = painterResource(coreUiR.drawable.ic_lock),
