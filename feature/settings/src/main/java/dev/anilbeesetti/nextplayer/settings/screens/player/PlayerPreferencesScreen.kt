@@ -191,6 +191,13 @@ private fun PlayerPreferencesScreenContent(
                     isChecked = state.preferences.rememberSelections,
                     onClick = { onAction(PlayerPreferencesUiEvent.ToggleRememberSelections) },
                 )
+                PreferenceSwitch(
+                    title = stringResource(id = R.string.dolby_vision_fallback),
+                    description = stringResource(id = R.string.dolby_vision_fallback_desc),
+                    icon = NextIcons.Player,
+                    isChecked = state.preferences.forceDolbyVisionFallback,
+                    onClick = { onAction(PlayerPreferencesUiEvent.ToggleDolbyVisionFallback) },
+                )
                 ClickablePreferenceItem(
                     title = stringResource(id = R.string.player_screen_orientation),
                     description = state.preferences.playerScreenOrientation.name(),
@@ -231,7 +238,7 @@ private fun PlayerPreferencesScreenContent(
                         items(ScreenOrientation.entries.toTypedArray()) {
                             RadioTextButton(
                                 text = it.name(),
-                                selected = it == state.preferences.playerScreenOrientation,
+                                selected = (it == state.preferences.playerScreenOrientation),
                                 onClick = {
                                     onAction(PlayerPreferencesUiEvent.UpdatePreferredPlayerOrientation(it))
                                     onAction(PlayerPreferencesUiEvent.ShowDialog(null))
@@ -249,7 +256,7 @@ private fun PlayerPreferencesScreenContent(
                         items(ControlButtonsPosition.entries.toTypedArray()) {
                             RadioTextButton(
                                 text = it.name(),
-                                selected = it == state.preferences.controlButtonsPosition,
+                                selected = (it == state.preferences.controlButtonsPosition),
                                 onClick = {
                                     onAction(PlayerPreferencesUiEvent.UpdatePreferredControlButtonsPosition(it))
                                     onAction(PlayerPreferencesUiEvent.ShowDialog(null))
