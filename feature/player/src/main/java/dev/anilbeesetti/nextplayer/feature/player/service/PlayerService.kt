@@ -29,6 +29,7 @@ import android.os.Handler
 import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
+import androidx.media3.exoplayer.mediacodec.MediaCodecUtil
 import androidx.media3.exoplayer.video.VideoRendererEventListener
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -740,11 +741,11 @@ class PlayerService : MediaSessionService() {
                 val selector = if (playerPreferences.forceDolbyVisionFallback) {
                     MediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
                         val effectiveMime = if (MimeTypes.VIDEO_DOLBY_VISION == mimeType) {
-                            MimeTypes.VIDEO_HEVC
+                            MimeTypes.VIDEO_H265
                         } else {
                             mimeType
                         }
-                        mediaCodecSelector.createDecoderList(
+                        MediaCodecUtil.getDecoderInfos(
                             effectiveMime,
                             requiresSecureDecoder,
                             requiresTunnelingDecoder,
@@ -772,7 +773,7 @@ class PlayerService : MediaSessionService() {
                     if (playerPreferences.forceDolbyVisionFallback && isDolbyVision) {
                         configuration.mediaFormat.setString(
                             android.media.MediaFormat.KEY_MIME,
-                            MimeTypes.VIDEO_HEVC,
+                            MimeTypes.VIDEO_H265,
                         )
                         if (android.os.Build.VERSION.SDK_INT >= 29) {
                             configuration.mediaFormat.removeKey(android.media.MediaFormat.KEY_PROFILE)
