@@ -25,6 +25,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
+import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.session.CommandButton
@@ -120,6 +121,7 @@ class PlayerService : MediaSessionService() {
 
     private lateinit var decoderManager: DecoderManager
     private lateinit var trackSelector: DefaultTrackSelector
+
     private val decoderRecoveryManager = DecoderRecoveryManager()
 
     private val decoderAnalyticsListener = object : AnalyticsListener {
@@ -130,7 +132,7 @@ class PlayerService : MediaSessionService() {
         override fun onVideoDecoderInitialized(
             eventTime: AnalyticsListener.EventTime,
             decoderName: String,
-            initializationTimestampMs: Long,
+            initializedTimestampMs: Long,
             initializationDurationMs: Long,
         ) {
             Logger.logInfo(
@@ -144,7 +146,7 @@ class PlayerService : MediaSessionService() {
         override fun onAudioDecoderInitialized(
             eventTime: AnalyticsListener.EventTime,
             decoderName: String,
-            initializationTimestampMs: Long,
+            initializedTimestampMs: Long,
             initializationDurationMs: Long,
         ) {
             Logger.logInfo(
@@ -337,7 +339,7 @@ class PlayerService : MediaSessionService() {
                 (
                     playbackState == Player.STATE_IDLE &&
                         player?.mediaItemCount == 0
-                    )
+                )
             if (shouldResetPlaybackParameters) {
                 mediaSession?.player?.trackSelectionParameters = TrackSelectionParameters.DEFAULT
                 mediaSession?.player?.setPlaybackSpeed(playerPreferences.defaultPlaybackSpeed)
@@ -612,9 +614,9 @@ class PlayerService : MediaSessionService() {
 
                 CustomCommands.SET_VIDEO_DECODER_MODE -> {
                     val mode = args.decoderMode(CustomCommands.VIDEO_DECODER_MODE_KEY)
-                        ?: return@future SessionResult(SessionResult.ERROR_BAD_VALUE)
+                        ?: return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
                     val player = mediaSession?.player as? ExoPlayer
-                        ?: return@future SessionResult(SessionResult.ERROR_INVALID_STATE)
+                        ?: return@future SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE)
                     decoderRecoveryManager.onUserSelection(DecoderTrackType.VIDEO, mode)
                     selectDecoder(DecoderTrackType.VIDEO, mode)
                     serviceScope.launch { handleUnsupportedTrack(player.currentTracks, DecoderTrackType.VIDEO) }
@@ -623,9 +625,9 @@ class PlayerService : MediaSessionService() {
 
                 CustomCommands.SET_AUDIO_DECODER_MODE -> {
                     val mode = args.decoderMode(CustomCommands.AUDIO_DECODER_MODE_KEY)
-                        ?: return@future SessionResult(SessionResult.ERROR_BAD_VALUE)
+                        ?: return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
                     val player = mediaSession?.player as? ExoPlayer
-                        ?: return@future SessionResult(SessionResult.ERROR_INVALID_STATE)
+                        ?: return@future SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE)
                     decoderRecoveryManager.onUserSelection(DecoderTrackType.AUDIO, mode)
                     selectDecoder(DecoderTrackType.AUDIO, mode)
                     serviceScope.launch { handleUnsupportedTrack(player.currentTracks, DecoderTrackType.AUDIO) }
@@ -634,10 +636,10 @@ class PlayerService : MediaSessionService() {
 
                 CustomCommands.TRY_DECODER_FALLBACK -> {
                     val retry = decoderRecoveryManager.confirmFallback()
-                        ?: return@future SessionResult(SessionResult.ERROR_INVALID_STATE)
+                        ?: return@future SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE)
                     if (!retryDecoderWith(retry)) {
                         decoderRecoveryManager.onNonDecoderError()
-                        return@future SessionResult(SessionResult.ERROR_INVALID_STATE)
+                        return@future SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE)
                     }
                     return@future SessionResult(SessionResult.RESULT_SUCCESS)
                 }
@@ -700,12 +702,11 @@ class PlayerService : MediaSessionService() {
         super.onCreate()
         decoderManager = DecoderManager()
         val renderersFactory = object : NextRenderersFactory(applicationContext) {
-            override fun getCodecAdapterFactory(): androidx.media3.exoplayer.mediacodec.MediaCodecAdapter.Factory {
+            override fun getCodecAdapterFactory(): MediaCodecAdapter.Factory {
                 val defaultFactory = super.getCodecAdapterFactory()
-                return androidx.media3.exoplayer.mediacodec.MediaCodecAdapter.Factory { configuration ->
-                    if (playerPreferences.forceDolbyVisionFallback &&
-                        MimeTypes.VIDEO_DOLBY_VISION == configuration.format.sampleMimeType
-                    ) {
+                return MediaCodecAdapter.Factory { configuration ->
+                    val isDolbyVision = MimeTypes.VIDEO_DOLBY_VISION == configuration.format.sampleMimeType
+                    if (playerPreferences.forceDolbyVisionFallback && isDolbyVision) {
                         if (android.os.Build.VERSION.SDK_INT >= 29) {
                             configuration.mediaFormat.removeKey(android.media.MediaFormat.KEY_PROFILE)
                         } else {
