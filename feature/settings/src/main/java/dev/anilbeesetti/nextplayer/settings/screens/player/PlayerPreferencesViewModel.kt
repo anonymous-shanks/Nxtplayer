@@ -58,6 +58,7 @@ class PlayerPreferencesViewModel(
             is PlayerPreferencesUiEvent.UpdateDefaultPlaybackSpeed -> updateDefaultPlaybackSpeed(action.value)
             is PlayerPreferencesUiEvent.UpdateControlAutoHideTimeout -> updateControlAutoHideTimeout(action.value)
             is PlayerPreferencesUiEvent.ToggleUseMaterialYouControls -> toggleUseMaterialYouControls()
+            is PlayerPreferencesUiEvent.ToggleDolbyVisionFallback -> toggleDolbyVisionFallback()
         }
     }
 
@@ -156,6 +157,14 @@ class PlayerPreferencesViewModel(
             }
         }
     }
+
+    private fun toggleDolbyVisionFallback() {
+        viewModelScope.launch {
+            preferencesRepository.updatePlayerPreferences {
+                it.copy(forceDolbyVisionFallback = !it.forceDolbyVisionFallback)
+            }
+        }
+    }
 }
 
 @Stable
@@ -185,4 +194,5 @@ sealed interface PlayerPreferencesUiEvent {
     data class UpdateDefaultPlaybackSpeed(val value: Float) : PlayerPreferencesUiEvent
     data class UpdateControlAutoHideTimeout(val value: Int) : PlayerPreferencesUiEvent
     data object ToggleUseMaterialYouControls : PlayerPreferencesUiEvent
+    data object ToggleDolbyVisionFallback : PlayerPreferencesUiEvent
 }
