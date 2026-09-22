@@ -286,7 +286,7 @@ internal fun PlayerSeekbar(
             hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
         }
         lastSeekChapterIndex = chapterIndex
-        onValueChange(value)
+        onSeek(value)
     }
     val onValueChangeFinished = {
         lastSeekChapterIndex = null
