@@ -2,10 +2,12 @@ package dev.anilbeesetti.nextplayer.feature.player.service
 
 import android.app.PendingIntent
 import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
 import android.media.audiofx.LoudnessEnhancer
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
@@ -24,10 +26,13 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.mediacodec.MediaCodecAdapter
+import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
+import androidx.media3.exoplayer.video.VideoRendererEventListener
 import androidx.media3.session.CommandButton
 import androidx.media3.session.CommandButton.ICON_UNDEFINED
 import androidx.media3.session.MediaSession
@@ -702,11 +707,53 @@ class PlayerService : MediaSessionService() {
         super.onCreate()
         decoderManager = DecoderManager()
         val renderersFactory = object : NextRenderersFactory(applicationContext) {
+            override fun buildVideoRenderers(
+                context: Context,
+                extensionRendererMode: Int,
+                mediaCodecSelector: MediaCodecSelector,
+                enableDecoderFallback: Boolean,
+                eventHandler: Handler,
+                eventListener: VideoRendererEventListener,
+                allowedVideoJoiningTimeMs: Long,
+                out: java.util.ArrayList<Renderer>,
+            ) {
+                val selector = if (playerPreferences.forceDolbyVisionFallback) {
+                    MediaCodecSelector { mimeType, requiresSecureDecoder, requiresTunnelingDecoder ->
+                        val effectiveMime = if (MimeTypes.VIDEO_DOLBY_VISION == mimeType) {
+                            MimeTypes.VIDEO_HEVC
+                        } else {
+                            mimeType
+                        }
+                        mediaCodecSelector.createDecoderList(
+                            effectiveMime,
+                            requiresSecureDecoder,
+                            requiresTunnelingDecoder,
+                        )
+                    }
+                } else {
+                    mediaCodecSelector
+                }
+                super.buildVideoRenderers(
+                    context,
+                    extensionRendererMode,
+                    selector,
+                    enableDecoderFallback,
+                    eventHandler,
+                    eventListener,
+                    allowedVideoJoiningTimeMs,
+                    out,
+                )
+            }
+
             override fun getCodecAdapterFactory(): MediaCodecAdapter.Factory {
                 val defaultFactory = super.getCodecAdapterFactory()
                 return MediaCodecAdapter.Factory { configuration ->
                     val isDolbyVision = MimeTypes.VIDEO_DOLBY_VISION == configuration.format.sampleMimeType
                     if (playerPreferences.forceDolbyVisionFallback && isDolbyVision) {
+                        configuration.mediaFormat.setString(
+                            android.media.MediaFormat.KEY_MIME,
+                            MimeTypes.VIDEO_HEVC,
+                        )
                         if (android.os.Build.VERSION.SDK_INT >= 29) {
                             configuration.mediaFormat.removeKey(android.media.MediaFormat.KEY_PROFILE)
                         } else {
