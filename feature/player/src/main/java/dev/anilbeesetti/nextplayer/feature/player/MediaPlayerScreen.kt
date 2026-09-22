@@ -462,6 +462,8 @@ fun MediaPlayerScreen(
                                 ControlsBottomView(
                                     player = player,
                                     mediaPresentationState = mediaPresentationState,
+                                    showRemainingTime = playerPreferences.showRemainingTime,
+                                    onShowRemainingTimeChange = { viewModel.updateShowRemainingTime(it) },
                                     onChaptersClick = {
                                         controlsVisibilityState.hideControls()
                                         overlayView = OverlayView.CHAPTERS
