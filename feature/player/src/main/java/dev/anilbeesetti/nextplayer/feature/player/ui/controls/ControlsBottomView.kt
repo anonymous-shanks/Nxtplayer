@@ -40,7 +40,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -94,6 +93,8 @@ fun ControlsBottomView(
     modifier: Modifier = Modifier,
     player: Player,
     mediaPresentationState: MediaPresentationState,
+    showRemainingTime: Boolean,
+    onShowRemainingTimeChange: (Boolean) -> Unit,
     onChaptersClick: () -> Unit,
     controlsAlignment: Alignment.Horizontal,
     videoContentScale: VideoContentScale,
@@ -125,13 +126,12 @@ fun ControlsBottomView(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            var showPendingPosition by retain { mutableStateOf(false) }
 
-            PillButton(onClick = { showPendingPosition = !showPendingPosition }) {
+            PillButton(onClick = { onShowRemainingTimeChange(!showRemainingTime) }) {
                 Text(
                     text = buildString {
                         append(
-                            when (showPendingPosition) {
+                            when (showRemainingTime) {
                                 true -> "-${mediaPresentationState.pendingPositionFormatted}"
                                 false -> mediaPresentationState.positionFormatted
                             },
@@ -286,7 +286,7 @@ internal fun PlayerSeekbar(
             hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
         }
         lastSeekChapterIndex = chapterIndex
-        onSeek(value)
+        onValueChange(value)
     }
     val onValueChangeFinished = {
         lastSeekChapterIndex = null
