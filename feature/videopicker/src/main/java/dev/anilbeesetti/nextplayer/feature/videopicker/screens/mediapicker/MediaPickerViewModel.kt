@@ -130,6 +130,7 @@ class MediaPickerViewModel(
             is MediaPickerAction.AddSelectionToPlaylist -> addSelectionToPlaylist(action.playlistId)
             is MediaPickerAction.CreatePlaylistWithSelection -> createPlaylistWithSelection(action.name)
             is MediaPickerAction.DismissAddToPlaylist -> dismissAddToPlaylist()
+            is MediaPickerAction.PlayQuickPlayVideo -> playQuickPlayVideo()
         }
     }
 
@@ -299,6 +300,31 @@ class MediaPickerViewModel(
         viewModelScope.launch {
             val videoUris = selectedItems.toVideoUris()
             output.playVideos(videoUris)
+        }
+    }
+
+    private fun playQuickPlayVideo() {
+        val recentVideo = stateInternal.value.recentlyPlayedVideo ?: return
+        viewModelScope.launch {
+            val preferences = stateInternal.value.preferences
+            val uiVideos = (stateInternal.value.mediaDataState as? DataState.Success)?.value?.videos
+            var siblings = uiVideos?.filter { it.parentPath == recentVideo.parentPath }
+
+            if (siblings.isNullOrEmpty()) {
+                siblings = getSortedVideosUseCase(recentVideo.parentPath).first()
+                if (preferences.mediaViewMode == MediaViewMode.FOLDERS) {
+                    siblings = siblings.filter { it.parentPath == recentVideo.parentPath }
+                }
+            }
+
+            if (siblings.isEmpty()) {
+                output.playVideo(recentVideo.uriString.toUri())
+            } else {
+                val startIndex = siblings.indexOfFirst { it.uriString == recentVideo.uriString }.coerceAtLeast(0)
+                val uris = siblings.map { it.uriString.toUri() }
+                val reorderedUris = uris.drop(startIndex) + uris.take(startIndex)
+                output.playVideos(reorderedUris)
+            }
         }
     }
 
@@ -563,4 +589,5 @@ sealed interface MediaPickerAction {
     data class AddSelectionToPlaylist(val playlistId: Long) : MediaPickerAction
     data class CreatePlaylistWithSelection(val name: String) : MediaPickerAction
     data object DismissAddToPlaylist : MediaPickerAction
+    data object PlayQuickPlayVideo : MediaPickerAction
 }
