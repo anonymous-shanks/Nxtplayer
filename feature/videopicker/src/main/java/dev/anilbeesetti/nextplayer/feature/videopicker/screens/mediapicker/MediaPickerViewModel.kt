@@ -130,7 +130,6 @@ class MediaPickerViewModel(
             is MediaPickerAction.AddSelectionToPlaylist -> addSelectionToPlaylist(action.playlistId)
             is MediaPickerAction.CreatePlaylistWithSelection -> createPlaylistWithSelection(action.name)
             is MediaPickerAction.DismissAddToPlaylist -> dismissAddToPlaylist()
-            is MediaPickerAction.PlayQuickPlayVideo -> playQuickPlayVideo()
         }
     }
 
@@ -301,14 +300,6 @@ class MediaPickerViewModel(
             val videoUris = selectedItems.toVideoUris()
             output.playVideos(videoUris)
         }
-    }
-
-    private fun playQuickPlayVideo() {
-        // By passing the single URI (just like a normal tap in the folder list),
-        // we delegate the sibling lookup and index matching to the PlayerViewModel's GetSortedPlaylistUseCase.
-        // This natively supports Next/Previous navigation and completely avoids the rotation bug.
-        val recentVideo = stateInternal.value.recentlyPlayedVideo ?: return
-        output.playVideo(recentVideo.uriString.toUri())
     }
 
     private fun deleteSelectedItems(selectedItems: Set<SelectionItem>, permanently: Boolean) {
@@ -572,5 +563,4 @@ sealed interface MediaPickerAction {
     data class AddSelectionToPlaylist(val playlistId: Long) : MediaPickerAction
     data class CreatePlaylistWithSelection(val name: String) : MediaPickerAction
     data object DismissAddToPlaylist : MediaPickerAction
-    data object PlayQuickPlayVideo : MediaPickerAction
 }
