@@ -192,12 +192,15 @@ internal fun MediaPickerScreenContent(
 
     val mediaHolder = (state.mediaDataState as? DataState.Success)?.value
     val onFabClick = {
-        val selectedItem = state.recentlyPlayedVideo?.toSelectedVideo()
-            ?: mediaHolder?.folders?.firstOrNull()?.toSelectedFolder()
-            ?: mediaHolder?.videos?.firstOrNull()?.toSelectedVideo()
+        if (state.recentlyPlayedVideo != null) {
+            onAction(MediaPickerAction.PlayQuickPlayVideo)
+        } else {
+            val selectedItem = mediaHolder?.folders?.firstOrNull()?.toSelectedFolder()
+                ?: mediaHolder?.videos?.firstOrNull()?.toSelectedVideo()
 
-        selectedItem?.let { onAction(MediaPickerAction.PlaySelectedItems(setOf(selectedItem))) }
-            ?: selectVideoFileLauncher.launch("video/*")
+            selectedItem?.let { onAction(MediaPickerAction.PlaySelectedItems(setOf(selectedItem))) }
+                ?: selectVideoFileLauncher.launch("video/*")
+        }
     }
 
     BindTopLevelBottomBarVisible(state.folderName != null || !selectionManager.isInSelectionMode)
