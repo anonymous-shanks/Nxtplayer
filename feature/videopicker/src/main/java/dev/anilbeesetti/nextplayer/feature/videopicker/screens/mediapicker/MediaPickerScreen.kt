@@ -196,11 +196,8 @@ internal fun MediaPickerScreenContent(
             ?: mediaHolder?.folders?.firstOrNull()?.toSelectedFolder()
             ?: mediaHolder?.videos?.firstOrNull()?.toSelectedVideo()
 
-        when (selectedItem) {
-            is SelectionItem.Video -> onAction(MediaPickerAction.OnPlayVideo(selectedItem.uriString.toUri()))
-            is SelectionItem.Folder -> onAction(MediaPickerAction.PlaySelectedItems(setOf(selectedItem)))
-            null -> selectVideoFileLauncher.launch("video/*")
-        }
+        selectedItem?.let { onAction(MediaPickerAction.PlaySelectedItems(setOf(selectedItem))) }
+            ?: selectVideoFileLauncher.launch("video/*")
     }
 
     BindTopLevelBottomBarVisible(state.folderName != null || !selectionManager.isInSelectionMode)
