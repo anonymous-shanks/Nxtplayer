@@ -24,7 +24,11 @@ internal fun PreviousButton(player: Player, modifier: Modifier = Modifier) {
         modifier = modifier.size(48.dp),
         isEnabled = state.isEnabled,
         onClick = {
-            state.onClick()
+            if (player.hasPreviousMediaItem()) {
+                player.seekToPreviousMediaItem()
+            } else {
+                player.seekTo(0)
+            }
             controlsVisibilityState?.showControls()
         },
     ) {
