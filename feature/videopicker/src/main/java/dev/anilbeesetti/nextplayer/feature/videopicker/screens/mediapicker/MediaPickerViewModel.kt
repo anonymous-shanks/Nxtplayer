@@ -304,28 +304,11 @@ class MediaPickerViewModel(
     }
 
     private fun playQuickPlayVideo() {
+        // By passing the single URI (just like a normal tap in the folder list),
+        // we delegate the sibling lookup and index matching to the PlayerViewModel's GetSortedPlaylistUseCase.
+        // This natively supports Next/Previous navigation and completely avoids the rotation bug.
         val recentVideo = stateInternal.value.recentlyPlayedVideo ?: return
-        viewModelScope.launch {
-            val preferences = stateInternal.value.preferences
-            val uiVideos = (stateInternal.value.mediaDataState as? DataState.Success)?.value?.videos
-            var siblings = uiVideos?.filter { it.parentPath == recentVideo.parentPath }
-
-            if (siblings.isNullOrEmpty()) {
-                siblings = getSortedVideosUseCase(recentVideo.parentPath).first()
-                if (preferences.mediaViewMode == MediaViewMode.FOLDERS) {
-                    siblings = siblings.filter { it.parentPath == recentVideo.parentPath }
-                }
-            }
-
-            if (siblings.isEmpty()) {
-                output.playVideo(recentVideo.uriString.toUri())
-            } else {
-                val startIndex = siblings.indexOfFirst { it.uriString == recentVideo.uriString }.coerceAtLeast(0)
-                val uris = siblings.map { it.uriString.toUri() }
-                val reorderedUris = uris.drop(startIndex) + uris.take(startIndex)
-                output.playVideos(reorderedUris)
-            }
-        }
+        output.playVideo(recentVideo.uriString.toUri())
     }
 
     private fun deleteSelectedItems(selectedItems: Set<SelectionItem>, permanently: Boolean) {
