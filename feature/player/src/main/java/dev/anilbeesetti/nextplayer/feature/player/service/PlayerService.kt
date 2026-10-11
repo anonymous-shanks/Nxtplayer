@@ -696,19 +696,7 @@ class PlayerService : MediaSessionService() {
                 }
 
                 CustomCommands.STOP_PLAYER_SESSION -> {
-                    mediaSession?.run {
-                        serviceScope.launch {
-                            mediaRepository.updateMediumPosition(
-                                uri = player.currentMediaItem?.mediaId ?: return@launch,
-                                position = player.currentPosition,
-                            )
-                        }
-                    }
-                    mediaSession?.run {
-                        player.clearMediaItems()
-                        player.stop()
-                    }
-                    stopSelf()
+                    savePositionAndStopSession()
                     return@future SessionResult(SessionResult.RESULT_SUCCESS)
                 }
             }
@@ -725,6 +713,7 @@ class PlayerService : MediaSessionService() {
         trackSelector = DefaultTrackSelector(applicationContext).apply {
             setParameters(
                 buildUponParameters()
+                    .setTunnelingEnabled(playerPreferences.enableTunneledPlayback)
                     .setPreferredAudioLanguage(playerPreferences.preferredAudioLanguage)
                     .setPreferredTextLanguage(playerPreferences.preferredSubtitleLanguage),
             )
@@ -788,10 +777,24 @@ class PlayerService : MediaSessionService() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
-        val player = mediaSession?.player!!
+        val player = mediaSession?.player ?: return
         if (!player.playWhenReady || player.mediaItemCount == 0 || player.playbackState == Player.STATE_ENDED) {
-            stopSelf()
+            serviceScope.launch { savePositionAndStopSession() }
         }
+    }
+
+    private suspend fun savePositionAndStopSession() {
+        mediaSession?.run {
+            player.currentMediaItem?.let { mediaItem ->
+                mediaRepository.updateMediumPosition(
+                    uri = mediaItem.mediaId,
+                    position = player.currentPosition,
+                )
+            }
+            player.clearMediaItems()
+            player.stop()
+        }
+        stopSelf()
     }
 
     override fun onDestroy() {
